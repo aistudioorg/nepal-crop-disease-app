@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nepal Crop Disease Detection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Nepal Crop Disease Detection</h1>
+            <p>Upload a plant image to detect disease</p>
+        </header>
+
+        <main class="main-content">
+            <div class="upload-section">
+                <form id="uploadForm">
+                    <div class="upload-box" id="uploadBox">
+                        <input type="file" id="imageInput" accept="image/*" hidden>
+                        <div class="upload-content">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <p>Drag and drop your plant image here</p>
+                            <p class="or-text">OR</p>
+                            <button type="button" class="browse-btn">Browse Files</button>
+                        </div>
+                    </div>
+                    <div id="previewContainer" class="preview-container" style="display: none;">
+                        <img id="previewImage" src="" alt="Preview">
+                        <button type="button" class="change-btn" id="changeBtn">Change Image</button>
+                    </div>
+                    <button type="submit" class="predict-btn" id="predictBtn">Predict Disease</button>
+                </form>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>Prediction Results</h2>
+                <div class="result-card">
+                    <div class="disease-info">
+                        <h3>Detected Disease</h3>
+                        <p class="disease-name" id="diseaseName">-</p>
+                    </div>
+                    <div class="confidence-info">
+                        <h3>Confidence Score</h3>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceFill"></div>
+                        </div>
+                        <p class="confidence-text" id="confidenceText">-</p>
+                    </div>
+                </div>
+
+                <div class="probabilities-section">
+                    <h3>All Predictions</h3>
+                    <div class="probabilities-list" id="probabilitiesList">
+                    </div>
+                </div>
+
+                <button type="button" class="reset-btn" id="resetBtn">Upload Another Image</button>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing image...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
