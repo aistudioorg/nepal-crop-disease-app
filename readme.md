@@ -1,96 +1,62 @@
-\# 🌾 Nepal Crop Disease Detection App
+# 🌾 Nepal Crop Disease Detection App
 
+An AI-powered crop disease detection system designed specifically for Nepal.
 
+## About
 
-An AI-powered crop disease detection system designed specifically for Nepal 🇳🇵
+AI-based crop disease detection using region-specific models trained on Nepal datasets to improve accuracy for local farmers, researchers, and agricultural institutions.
 
+## Features
 
+- AI-based crop disease detection
+- Nepal-focused model training
+- Web-based interface with drag-and-drop upload
+- Disease details with treatment suggestions
+- Disease probability predictions
 
-\## 🌱 About the Project
+## Tech Stack
 
+- Python, PyTorch, FastAPI
+- Computer Vision (DenseNet121)
+- LangChain for AI-powered insights
+- HTML/CSS/JS frontend
 
-
-AI alone cannot effectively detect region-specific crop diseases. Global datasets often fail to capture local environmental conditions, crop varieties, and disease patterns.
-
-
-
-To address this, we are developing a \*\*localized AI system trained on Nepal-specific datasets\*\* to improve accuracy and usability for farmers, researchers, and agricultural institutions.
-
-
-
-📊 Project Workflow
-
-📜 License
-
-
-
-This project is licensed under the MIT License.
-
-
-
-💡 Vision
-
-
-
-To make AI accessible and useful for real-world agricultural challenges in Nepal.
-
-
-
-\## 🎯 Objectives
-
-
-
-\- Build a \*\*region-specific AI model\*\* for crop disease detection
-
-\- Support \*\*Nepali agriculture digitization\*\*
-
-\- Empower farmers with \*\*accessible AI tools\*\*
-
-\- Promote \*\*open research and collaboration\*\*
-
-
-
-\## 🚀 Features
-
-
-
-\- AI-based crop disease detection
-
-\- Local dataset training (Nepal-focused)
-
-\- Streamlit-based simple interface
-
-\- Expandable for mobile/web integration
-
-
-
-\## 🛠️ Tech Stack
-
-
-
-\- Python
-
-\- PyTorch
-
-\- Streamlit
-
-\- Computer Vision
-
-
-
-\## ⚙️ Installation
-
-
+## Installation
 
 ```bash
-
-git clone https://github.com/aistudioorg/nepal\_crop\_disease\_app.git
-
-cd nepal\_crop\_disease\_app
-
-
-
+git clone https://github.com/aistudioorg/nepal_crop_disease_app.git
+cd nepal_crop_disease_app
 pip install -r requirements.txt
+```
 
-python main.py
+## Quick Start
 
+### Training
+```bash
+uvicorn app:app --reload
+```
+
+### Running the API
+```bash
+python app.py
+```
+
+Open `front_end/index.html` in your browser and navigate to http://localhost:8000
+
+## Project Structure
+
+- `app.py` - FastAPI server
+- `main.py` - Training script
+- `disease_model.py` - Model inference
+- `suggest.py` - AI-powered disease insights
+- `dataset.py` - Data handling
+- `train.py` - Model training
+- `front_end/` - Web interface
+
+## License
+
+MIT License
+
+## Vision
+
+To make AI accessible and useful for real-world agricultural challenges in Nepal.

@@ -1,159 +1,138 @@
 const API_BASE_URL = 'http://localhost:8000';
 
-const uploadForm = document.getElementById('uploadForm');
-const uploadBox = document.getElementById('uploadBox');
-const imageInput = document.getElementById('imageInput');
+const uploadBox        = document.getElementById('uploadBox');
+const imageInput       = document.getElementById('imageInput');
+const browseBtn        = document.getElementById('browseBtn');
 const previewContainer = document.getElementById('previewContainer');
-const previewImage = document.getElementById('previewImage');
-const predictBtn = document.getElementById('predictBtn');
-const changeBtn = document.getElementById('changeBtn');
-const resultsSection = document.getElementById('resultsSection');
-const loading = document.getElementById('loading');
-const errorMessage = document.getElementById('errorMessage');
-const resetBtn = document.getElementById('resetBtn');
+const previewImage     = document.getElementById('previewImage');
+const predictBtn       = document.getElementById('predictBtn');
+const changeBtn        = document.getElementById('changeBtn');
+const resultsSection   = document.getElementById('resultsSection');
+const detailsSection   = document.getElementById('detailsSection');
+const loading          = document.getElementById('loading');
+const errorMessage     = document.getElementById('errorMessage');
+const resetBtn         = document.getElementById('resetBtn');
+const closeDetailsBtn  = document.getElementById('closeDetailsBtn');
 
-let selectedFile = null;
+let selectedFile = null, currentDisease = null;
 
+browseBtn.addEventListener('click', (e) => { e.stopPropagation(); imageInput.click(); });
 uploadBox.addEventListener('click', () => imageInput.click());
-
-uploadBox.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadBox.classList.add('dragover');
-});
-
+uploadBox.addEventListener('dragover', (e) => { e.preventDefault(); uploadBox.classList.add('dragover'); });
 uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('dragover'));
-
 uploadBox.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadBox.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].type.startsWith('image/')) {
-        handleFileSelect(files[0]);
-    }
+  e.preventDefault(); uploadBox.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) handleFileSelect(f);
 });
-
-imageInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-});
+imageInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFileSelect(e.target.files[0]); });
 
 function handleFileSelect(file) {
-    selectedFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        previewImage.src = e.target.result;
-        uploadBox.style.display = 'none';
-        previewContainer.style.display = 'block';
-        resultsSection.style.display = 'none';
-        hideError();
-    };
-    reader.readAsDataURL(file);
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImage.src = e.target.result;
+    uploadBox.style.display = 'none';
+    previewContainer.style.display = 'block';
+    resultsSection.style.display = 'none';
+    detailsSection.style.display = 'none';
+    hideError();
+  };
+  reader.readAsDataURL(file);
 }
 
-changeBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    selectedFile = null;
-    imageInput.value = '';
-    previewContainer.style.display = 'none';
-    uploadBox.style.display = 'block';
-    resultsSection.style.display = 'none';
-    hideError();
+changeBtn.addEventListener('click', () => {
+  selectedFile = null; imageInput.value = '';
+  previewContainer.style.display = 'none';
+  uploadBox.style.display = 'block';
+  resultsSection.style.display = 'none';
+  detailsSection.style.display = 'none';
+  hideError();
 });
 
-uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!selectedFile) {
-        showError('Please select an image');
-        return;
-    }
-    await predictDisease();
+predictBtn.addEventListener('click', async () => {
+  if (!selectedFile) { showError('Please select an image first.'); return; }
+  await predict();
 });
 
-async function predictDisease() {
-    predictBtn.disabled = true;
-    loading.style.display = 'flex';
-    resultsSection.style.display = 'none';
-    hideError();
-    
-    try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        const response = await fetch(`${API_BASE_URL}/predict`, { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('Prediction failed');
-        
-        const result = await response.json();
-        displayResults(result);
-    } catch (error) {
-        showError('Error: Make sure API server is running at http://localhost:8000');
-    } finally {
-        predictBtn.disabled = false;
-        loading.style.display = 'none';
-    }
+async function predict() {
+  predictBtn.disabled = true;
+  loading.style.display = 'flex';
+  resultsSection.style.display = 'none';
+  hideError();
+  try {
+    const fd = new FormData(); fd.append('file', selectedFile);
+    const res = await fetch(`${API_BASE_URL}/predict`, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    currentDisease = data.disease;
+    showResults(data);
+  } catch {
+    showError('Cannot connect — make sure the API server is running at http://localhost:8000');
+  } finally {
+    predictBtn.disabled = false;
+    loading.style.display = 'none';
+  }
 }
 
-function displayResults(result) {
-    const disease = result.disease;
-    const confidence = result.confidence;
-    const probabilities = result.all_probabilities;
-    
-    document.getElementById('diseaseName').textContent = disease;
-    
-    const confidenceFill = document.getElementById('confidenceFill');
-    confidenceFill.style.width = (confidence * 100) + '%';
-    document.getElementById('confidenceText').textContent = (confidence * 100).toFixed(2) + '%';
-    
-    const probabilitiesList = document.getElementById('probabilitiesList');
-    probabilitiesList.innerHTML = '';
-    const sortedProbs = Object.entries(probabilities).sort((a, b) => b[1] - a[1]);
-    
-    sortedProbs.forEach((entry) => {
-        const [diseaseName, probability] = entry;
-        const item = document.createElement('div');
-        item.className = 'probability-item';
-        if (diseaseName === disease) {
-            item.style.background = 'rgba(16, 185, 129, 0.1)';
-            item.style.borderColor = 'var(--primary-color)';
-        }
-        
-        const label = document.createElement('div');
-        label.className = 'probability-label';
-        label.textContent = diseaseName;
-        
-        const bar = document.createElement('div');
-        bar.className = 'probability-bar-small';
-        const fill = document.createElement('div');
-        fill.className = 'probability-bar-fill';
-        fill.style.width = (probability * 100) + '%';
-        bar.appendChild(fill);
-        
-        const value = document.createElement('div');
-        value.className = 'probability-value';
-        value.textContent = (probability * 100).toFixed(1) + '%';
-        
-        item.appendChild(label);
-        item.appendChild(bar);
-        item.appendChild(value);
-        probabilitiesList.appendChild(item);
+function showResults({ disease, confidence, all_probabilities }) {
+  document.getElementById('diseaseName').textContent = disease;
+  document.getElementById('confidenceText').textContent = (confidence * 100).toFixed(1) + '%';
+  setTimeout(() => { document.getElementById('confFill').style.width = (confidence * 100) + '%'; }, 50);
+
+  const list = document.getElementById('probabilitiesList');
+  list.innerHTML = '';
+  Object.entries(all_probabilities).sort((a,b) => b[1]-a[1]).forEach(([name, prob]) => {
+    const el = document.createElement('div');
+    el.className = 'prob-item' + (name === disease ? ' top' : '');
+    el.innerHTML = `<span class="prob-name">${name}</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:0%"></div></div>
+      <span class="prob-val">${(prob*100).toFixed(1)}%</span>`;
+    list.appendChild(el);
+    setTimeout(() => el.querySelector('.prob-fill').style.width = (prob*100)+'%', 80);
+  });
+
+  resultsSection.style.display = 'block';
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.querySelectorAll('.action-btn').forEach(btn => {
+  btn.addEventListener('click', () => fetchDetails(currentDisease, btn.dataset.context));
+});
+
+async function fetchDetails(disease, context) {
+  loading.style.display = 'flex';
+  hideError();
+  try {
+    const res = await fetch(`${API_BASE_URL}/disease-details`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ disease, context })
     });
-    
-    resultsSection.style.display = 'block';
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const labels = { symptoms:'🔬 Symptoms', causes:'⚠️ Causes', solution_natural:'🌿 Natural Fix', solution_artificial:'🧪 Chemical Fix' };
+    document.getElementById('detailsTitle').textContent = labels[context];
+    document.getElementById('detailsContent').textContent = data.details;
+    detailsSection.style.display = 'flex';
+    setTimeout(() => detailsSection.scrollIntoView({ behavior: 'smooth' }), 60);
+  } catch {
+    showError('Could not load details. Please try again.');
+  } finally {
+    loading.style.display = 'none';
+  }
 }
+
+closeDetailsBtn.addEventListener('click', () => { detailsSection.style.display = 'none'; });
 
 resetBtn.addEventListener('click', () => {
-    selectedFile = null;
-    imageInput.value = '';
-    previewContainer.style.display = 'none';
-    uploadBox.style.display = 'block';
-    predictBtn.disabled = false;
-    resultsSection.style.display = 'none';
-    uploadBox.classList.remove('dragover');
-    hideError();
+  selectedFile = null; currentDisease = null; imageInput.value = '';
+  previewContainer.style.display = 'none'; uploadBox.style.display = 'block';
+  predictBtn.disabled = false;
+  resultsSection.style.display = 'none'; detailsSection.style.display = 'none';
+  document.getElementById('confFill').style.width = '0%';
+  hideError();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-function showError(message) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-}
-
-function hideError() {
-    errorMessage.style.display = 'none';
-}
+function showError(msg) { document.getElementById('errorText').textContent = msg; errorMessage.style.display = 'flex'; }
+function hideError() { errorMessage.style.display = 'none'; }

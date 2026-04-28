@@ -1,76 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nepal Crop Disease Detection</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CropShield AI — Nepal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Nepal Crop Disease Detection</h1>
-            <p>Upload a plant image to detect disease</p>
-        </header>
 
-        <main class="main-content">
-            <div class="upload-section">
-                <form id="uploadForm">
-                    <div class="upload-box" id="uploadBox">
-                        <input type="file" id="imageInput" accept="image/*" hidden>
-                        <div class="upload-content">
-                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <p>Drag and drop your plant image here</p>
-                            <p class="or-text">OR</p>
-                            <button type="button" class="browse-btn">Browse Files</button>
-                        </div>
-                    </div>
-                    <div id="previewContainer" class="preview-container" style="display: none;">
-                        <img id="previewImage" src="" alt="Preview">
-                        <button type="button" class="change-btn" id="changeBtn">Change Image</button>
-                    </div>
-                    <button type="submit" class="predict-btn" id="predictBtn">Predict Disease</button>
-                </form>
-            </div>
+  <nav class="navbar">
+    <span class="nav-logo">🌾 CropShield AI</span>
+    <span class="nav-tag">Nepal</span>
+  </nav>
 
-            <div class="results-section" id="resultsSection" style="display: none;">
-                <h2>Prediction Results</h2>
-                <div class="result-card">
-                    <div class="disease-info">
-                        <h3>Detected Disease</h3>
-                        <p class="disease-name" id="diseaseName">-</p>
-                    </div>
-                    <div class="confidence-info">
-                        <h3>Confidence Score</h3>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" id="confidenceFill"></div>
-                        </div>
-                        <p class="confidence-text" id="confidenceText">-</p>
-                    </div>
-                </div>
+  <div class="container">
 
-                <div class="probabilities-section">
-                    <h3>All Predictions</h3>
-                    <div class="probabilities-list" id="probabilitiesList">
-                    </div>
-                </div>
-
-                <button type="button" class="reset-btn" id="resetBtn">Upload Another Image</button>
-            </div>
-
-            <div class="loading" id="loading" style="display: none;">
-                <div class="spinner"></div>
-                <p>Analyzing image...</p>
-            </div>
-
-            <div class="error-message" id="errorMessage" style="display: none;"></div>
-        </main>
+    <div class="hero">
+      <h1>Crop Disease Detection</h1>
+      <p>Upload a leaf or stem photo for an instant AI diagnosis.</p>
     </div>
 
-    <script src="script.js"></script>
+    <!-- UPLOAD -->
+    <section class="card" id="uploadSection">
+      <div class="drop-zone" id="uploadBox">
+        <input type="file" id="imageInput" accept="image/*" hidden />
+        <div class="drop-inner">
+          <div class="drop-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 16 12 12 8 16"></polyline>
+              <line x1="12" y1="12" x2="12" y2="21"></line>
+              <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+            </svg>
+          </div>
+          <p class="drop-title">Drop image here</p>
+          <button type="button" id="browseBtn" class="btn-browse">Browse Files</button>
+          <p class="drop-hint">JPG · PNG · WebP · max 10 MB</p>
+        </div>
+      </div>
+
+      <div id="previewContainer" style="display:none">
+        <div class="preview-wrap">
+          <img id="previewImage" src="" alt="Preview" />
+          <button id="changeBtn" class="btn-change">↺ Change</button>
+        </div>
+      </div>
+
+      <div id="errorMessage" class="error-box" style="display:none">
+        ⚠ <span id="errorText"></span>
+      </div>
+
+      <button id="predictBtn" class="btn-main">Analyze Plant</button>
+    </section>
+
+    <!-- LOADING -->
+    <div id="loading" class="loading-box" style="display:none">
+      <div class="spinner"></div>
+      <p>Analyzing your image…</p>
+    </div>
+
+    <!-- RESULTS -->
+    <section id="resultsSection" style="display:none">
+
+      <div class="card result-summary">
+        <div class="summary-row">
+          <div>
+            <p class="field-label">Detected Disease</p>
+            <p class="disease-name" id="diseaseName">—</p>
+          </div>
+          <div class="conf-block">
+            <p class="field-label">Confidence</p>
+            <p class="conf-value" id="confidenceText">—</p>
+            <div class="conf-bar"><div id="confFill" class="conf-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-title">Treatment & Info</p>
+        <div class="action-grid">
+          <button class="action-btn" data-context="symptoms">🔬 Symptoms</button>
+          <button class="action-btn" data-context="causes">⚠️ Causes</button>
+          <button class="action-btn" data-context="solution_natural">🌿 Natural Fix</button>
+          <button class="action-btn" data-context="solution_artificial">🧪 Chemical Fix</button>
+        </div>
+      </div>
+
+      <div id="detailsSection" class="card detail-card" style="display:none">
+        <div class="detail-head">
+          <span id="detailsTitle" class="detail-title"></span>
+          <button id="closeDetailsBtn" class="btn-close">✕</button>
+        </div>
+        <p id="detailsContent" class="detail-text"></p>
+      </div>
+
+      <div class="card">
+        <p class="section-title">All Possibilities</p>
+        <div id="probabilitiesList" class="prob-list"></div>
+      </div>
+
+      <button id="resetBtn" class="btn-reset">↺ Analyze Another Image</button>
+
+    </section>
+
+    <footer>🌾 CropShield AI — Built for Nepali farmers</footer>
+
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

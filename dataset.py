@@ -22,27 +22,22 @@ def load_data(data_dir):
     data = []
     for class_name in os.listdir(data_dir):
         class_path = os.path.join(data_dir, class_name)
-
         if os.path.isdir(class_path):
             for img in os.listdir(class_path):
                 img_path = os.path.join(class_path, img)
-                data.append({
-                    "image_path": img_path,
-                    "label": class_name
-                })
+                data.append({"image_path": img_path, "label": class_name})
     return data
 
 
 def prepare_dataset(dataset_path):
-    train_dir = os.path.join(dataset_path, "New Plant Diseases Dataset(Augmented)/New Plant Diseases Dataset(Augmented)/train")    
+    train_dir = os.path.join(dataset_path, "New Plant Diseases Dataset(Augmented)/New Plant Diseases Dataset(Augmented)/train")
     train_data = load_data(train_dir)
     train_df = pd.DataFrame(train_data)
     train_df = train_df.sample(frac=1, random_state=42).reset_index(drop=True)
     train_df = train_df[:5000]
-    # Encode labels
     label_encoder = LabelEncoder()
-    train_df['label'] = label_encoder.fit_transform(train_df['label'])    
-    return train_df,label_encoder
+    train_df['label'] = label_encoder.fit_transform(train_df['label'])
+    return train_df, label_encoder
 
 class DiseaseDataset(Dataset):
     def __init__(self, df, transform=None):
@@ -54,13 +49,10 @@ class DiseaseDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = self.df.iloc[idx]['image_path']
-        label = self.df.iloc[idx]['label']
-        label = torch.tensor(label, dtype=torch.long)
+        label = torch.tensor(self.df.iloc[idx]['label'], dtype=torch.long)
         image = Image.open(img_path).convert("RGB")
-
         if self.transform:
             image = self.transform(image)
-
         return image, label
 
 
