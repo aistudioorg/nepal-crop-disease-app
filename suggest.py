@@ -37,7 +37,7 @@ def initialize_suggest_chain():
         def format_docs(docs):
             return "\n\n".join(doc.page_content for doc in docs)
 
-        prompt_template = """You are a plant disease expert helping Asian farmers understand crop diseases.
+        prompt_template = """You are a plant disease expert helping Nepali farmers understand crop diseases.
 
 Rules:
 - Use simple language
