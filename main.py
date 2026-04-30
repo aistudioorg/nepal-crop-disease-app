@@ -1,19 +1,35 @@
-import pickle
-from dataset import download_dataset, prepare_dataset, get_data_loaders
-from train import train_model
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+from pydantic import BaseModel
+from disease_model import load_disease_model, predict_disease
+from suggest import get_disease_details
+
+app = FastAPI()
+
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
-def main():    
-    dataset_path = download_dataset()
-    if dataset_path is None:
-        print("Failed to download dataset")
-        return 
-    train_df, label_encoder = prepare_dataset(dataset_path)
-    train_loader = get_data_loaders(train_df, batch_size=32)
-    train_model(train_loader, num_epochs=5, learning_rate=0.0005)
-    with open("label_encoder.pkl", "wb") as f:
-        pickle.dump(label_encoder, f)
+@app.on_event("startup")
+async def startup():
+    load_disease_model()
+
+
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
+    contents = await file.read()
+    return predict_disease(contents)
+
+
+class DiseaseDetailsRequest(BaseModel):
+    disease: str
+    context: str
+
+
+@app.post("/disease-details")
+async def get_details(request: DiseaseDetailsRequest):
+    return get_disease_details(request.disease, request.context)
 
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
